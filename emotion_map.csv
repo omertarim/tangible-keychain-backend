@@ -1,0 +1,5 @@
+emotion_label;valence;arousal;keywords;curvature;sharpness;symmetry;twist;noise;hole_count
+joy;0.9;0.8;"happy; joyful; excited; thrilled; wonderful";0.90;0.10;0.80;0.75;0.35;0
+calm;0.8;0.2;"calm; peaceful; relaxed; serene; chill";0.80;0.20;0.90;0.15;0.15;0
+sadness;0.2;0.2;"sad; sorrow; down; gloomy; unhappy";0.40;0.60;0.70;0.10;0.20;0
+anxiety;0.1;0.9;"anxious; worried; nervous; panicked; tense";0.35;0.65;0.30;0.90;0.70;2
