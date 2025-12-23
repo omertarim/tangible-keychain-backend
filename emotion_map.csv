@@ -1,5 +1,10 @@
-emotion_label;valence;arousal;keywords;curvature;sharpness;symmetry;twist;noise;hole_count
-joy;0.9;0.8;"happy; joyful; excited; thrilled; wonderful";0.90;0.10;0.80;0.75;0.35;0
-calm;0.8;0.2;"calm; peaceful; relaxed; serene; chill";0.80;0.20;0.90;0.15;0.15;0
-sadness;0.2;0.2;"sad; sorrow; down; gloomy; unhappy";0.40;0.60;0.70;0.10;0.20;0
-anxiety;0.1;0.9;"anxious; worried; nervous; panicked; tense";0.35;0.65;0.30;0.90;0.70;2
+emotion_label;valence;arousal;keywords;curvature;sharpness;symmetry;twist;noise;hole_count;base_form;style_tag;size_mm;thickness_mm;fillet_mm;sym_n;twist_deg;noise_amp_mm;noise_seed;hole_policy
+joy;0.9;0.8;"happy; joyful; excited; thrilled; wonderful";0.90;0.10;0.80;0.75;0.35;0;sun;playful;40;4.2;3.6;9;60;1.4;1337;auto
+calm;0.8;0.2;"calm; peaceful; relaxed; serene; chill";0.85;0.15;0.95;0.10;0.10;0;wave;calm;38;4.5;4.0;6;0;0.6;1337;auto
+sadness;0.2;0.2;"sad; sorrow; down; gloomy; unhappy";0.55;0.45;0.70;0.05;0.15;0;droplet;heavy;38;4.8;3.0;5;0;0.4;1337;auto
+anxiety;0.1;0.9;"anxious; worried; nervous; panicked; tense";0.35;0.70;0.30;0.90;0.70;2;bolt;spiky;39;4.0;2.0;7;140;1.8;1337;auto
+anger;0.05;0.85;"angry; furious; mad; rage; irritated";0.25;0.85;0.25;0.60;0.55;1;flame;spiky;39;4.2;2.0;7;90;1.2;1337;auto
+love;0.95;0.70;"love; loved; sweetheart; darling; adore; romantic";0.95;0.10;0.85;0.25;0.25;1;heart;romantic;39;4.5;3.2;6;40;0.7;1337;auto
+surprise;0.75;0.9;"surprised; wow; shocked; amazed; unexpected";0.60;0.35;0.60;0.40;0.45;0;star;playful;39;4.0;2.4;10;30;1.0;1337;auto
+fear;0.15;0.8;"fear; scared; terrified; afraid; panic";0.20;0.90;0.20;0.70;0.60;1;spike;spiky;39;4.0;1.6;9;80;1.2;1337;auto
+
