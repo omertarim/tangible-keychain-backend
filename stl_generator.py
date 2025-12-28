@@ -138,9 +138,15 @@ def generate_scad_from_spec(spec: dict, out_name: str, thickness_mm: float = 4.2
     lines.append(f"pts = {json.dumps(pts_xy)};")
     lines.append(f"hole = [{hx}, {hy}, {hr}];")
 
+    lines.append("module shape2d(){")
+    lines.append("  // Fix: clean self-intersections / bad contours for CGAL render")
+    lines.append("  offset(r=0.35) offset(r=-0.35)")
+    lines.append("    polygon(points=pts, paths=[[for(i=[0:len(pts)-1]) i]]);")
+    lines.append("}")
+
     lines.append("module body(){")
-    lines.append("  linear_extrude(height=thickness_mm)")
-    lines.append("    polygon(points=pts);")
+    lines.append("  linear_extrude(height=thickness_mm, convexity=10)")
+    lines.append("    shape2d();")
     lines.append("}")
 
     lines.append("difference(){")
