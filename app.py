@@ -20,6 +20,29 @@ def normalize_text(s: str) -> str:
     return s
 
 
+def _sanitize_sliders(raw) -> dict:
+    """
+    Expect 5 sliders in [1..10].
+    If missing, return defaults (5).
+    """
+    default = {"joy": 5, "sadness": 5, "anger": 5, "calm": 5, "energy": 5}
+
+    if not isinstance(raw, dict):
+        return default
+
+    out = {}
+    for k in default.keys():
+        v = raw.get(k, default[k])
+        try:
+            v = int(v)
+        except Exception:
+            v = default[k]
+        v = max(1, min(10, v))
+        out[k] = v
+
+    return out
+
+
 @app.route("/")
 def home():
     return "Tangible Empathy Backend (SCAD-only) is working properly"
@@ -33,15 +56,19 @@ def scad_from_text():
     if not text:
         return jsonify({"error": "text is required"}), 400
 
-    # Random seed (her request farklı)
+    sliders = _sanitize_sliders(data.get("sliders"))
+
     salt = str(time.time_ns())
     seed = int(hashlib.sha256((text + salt).encode("utf-8")).hexdigest()[:8], 16)
 
-    # Eğer aynı cümle aynı şekil olsun istiyorsan:
-    # seed = int(hashlib.sha256(text.encode("utf-8")).hexdigest()[:8], 16)
+   
 
     try:
-        spec = generate_contour_spec(user_text=text, seed=seed, preferences=None)
+        spec = generate_contour_spec(
+            user_text=text,
+            seed=seed,
+            preferences=sliders  
+        )
     except Exception as e:
         return jsonify({"error": f"LLM contour generation failed: {str(e)}"}), 500
 
@@ -59,9 +86,20 @@ def scad_from_text():
         as_attachment=True,
         download_name=f"{out_name}.scad"
     ))
+
     resp.headers["X-Emotion-Tag"] = str(spec.get("emotion_tag", ""))
     resp.headers["X-Symbol"] = str(spec.get("symbol", ""))
+    resp.headers["X-Sliders"] = json_dumps_safe(sliders)
+
     return resp
+
+
+def json_dumps_safe(obj) -> str:
+    try:
+        import json
+        return json.dumps(obj, ensure_ascii=False)
+    except Exception:
+        return ""
 
 
 if __name__ == "__main__":

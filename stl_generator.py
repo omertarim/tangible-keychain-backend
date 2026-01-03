@@ -7,9 +7,8 @@ SCAD_OUT_DIR = Path("scad_out")
 SCAD_OUT_DIR.mkdir(exist_ok=True)
 
 
-# -----------------------
+
 # shape generators (pts)
-# -----------------------
 def _rotate_pts(pts, deg: float):
     a = math.radians(deg)
     c, s = math.cos(a), math.sin(a)
@@ -46,14 +45,14 @@ def _heart_pts(n: int, aspect: float, jitter: float, seed: int):
         x = 16 * (math.sin(t) ** 3)
         y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
 
-        # mild jitter for uniqueness, but keep heart recognizable
+        
         j = (jitter * 0.9) * (0.35 * math.sin(7 * t + 6.0 * rnd) + 0.25 * math.sin(11 * t + 3.0 * rnd))
         x *= (1.0 + j * 0.08)
         y *= (1.0 + j * 0.08)
 
         pts.append([x, y])
 
-    # aspect (elongate one axis)
+  
     pts = _scale_pts(pts, sx=1.0, sy=aspect)
     return pts
 
@@ -67,7 +66,7 @@ def _face_outline_pts(n: int, aspect: float, roundness: float, seed: int):
     n = max(260, min(340, int(n)))
     roundness = max(0.25, min(1.2, float(roundness)))
 
-    # superellipse exponent: bigger => squarer; smaller => rounder
+   
     m = 2.8 + (1.0 / roundness) * 3.2   # ~5.5..15
     m = max(3.0, min(12.0, m))
 
@@ -82,14 +81,13 @@ def _face_outline_pts(n: int, aspect: float, roundness: float, seed: int):
         t = 2 * math.pi * i / n
         ct, st = math.cos(t), math.sin(t)
 
-        # slight asymmetry (unique) but tiny
         asym = 1.0 + 0.03 * math.sin(3 * t + phase) + 0.02 * math.sin(5 * t + 7 * rnd)
 
         denom = (abs(ct) / (a + 1e-9)) ** m + (abs(st) / (b + 1e-9)) ** m
         r = (1.0 / (denom + 1e-12)) ** (1.0 / m)
 
         x = r * ct * asym
-        y = r * st * (1.0 - 0.02 * math.sin(2 * t + phase))  # tiny squash variation
+        y = r * st * (1.0 - 0.02 * math.sin(2 * t + phase)) 
 
         pts.append([x, y])
 
@@ -110,7 +108,7 @@ def _starburst_pts(n: int, spikes: int, spikiness: float, jitter: float, seed: i
     phase1 = 2 * math.pi * ((seed % 997) / 997.0)
     phase2 = 2 * math.pi * ((seed % 611) / 611.0)
 
-    k2 = spikes + 2 + (seed % 4)  # spikes+2..spikes+5
+    k2 = spikes + 2 + (seed % 4)  
     base_r = 22.0
 
     lobe_w = []
@@ -147,8 +145,8 @@ def _blob_pts(n: int, aspect: float, roundness: float, jitter: float, seed: int)
     rnd = (seed % 10000) / 10000.0
 
     base_r = 22.0
-    k1 = 4 + (seed % 4)    # 4..7
-    k2 = 7 + (seed % 5)    # 7..11
+    k1 = 4 + (seed % 4)   
+    k2 = 7 + (seed % 5)    
 
     pts = []
     for i in range(n):
@@ -192,11 +190,8 @@ def _bolt_pts(aspect: float, jitter: float, seed: int):
     return pts
 
 
-# -----------------------
-# HOLE placement helpers (FIX)
-# -----------------------
+
 def _polygon_centroid(pts):
-    # simple average centroid (good enough for our shapes)
     cx = sum(p[0] for p in pts) / max(1, len(pts))
     cy = sum(p[1] for p in pts) / max(1, len(pts))
     return cx, cy
@@ -211,7 +206,6 @@ def _shrink_polygon(pts, factor: float):
 
 
 def _point_in_poly(x, y, poly):
-    # ray casting
     inside = False
     n = len(poly)
     j = n - 1
@@ -231,39 +225,41 @@ def _pick_hole_center(pts, hr: float):
     minx, maxx = min(xs), max(xs)
     miny, maxy = min(ys), max(ys)
 
-    # güvenli iç bölge: kenardan ~ (hr + 3.5) mm uzak dur
-    margin = hr + 3.5
-    # target_r = 22 olduğuna göre factor ~ 0.7 civarı ideal
-    factor = max(0.60, min(0.82, 1.0 - (margin / 22.0)))
+    
+    margin = hr + 7.5  
+
+    factor = max(0.50, min(0.78, 1.0 - (margin / 22.0)))
     safe_poly = _shrink_polygon(pts, factor=factor)
 
-    inward = hr + 6.5  # senin istediğin "daha içeri"
+    inward = hr + 12.0  
+
+   
     candidates = [
-        (0.0, maxy - inward),              # TOP-CENTER (en güvenlisi)
-        (maxx - inward, maxy - inward),    # TOP-RIGHT
-        (minx + inward, maxy - inward),    # TOP-LEFT
-        (0.0, (maxy + miny) / 2.0),        # MID-CENTER
+        (0.0, maxy - inward),              
+        (0.0, maxy - inward - 4.0),          
+        (0.0, maxy - inward - 8.0),          
+        ((minx + maxx) / 2.0, maxy - inward),
+        (0.0, (maxy + miny) / 2.0 + 6.0),    
+    
     ]
 
     for hx, hy in candidates:
         if _point_in_poly(hx, hy, safe_poly):
             return float(hx), float(hy)
 
-    # hiçbir aday tutmazsa: merkezden yukarı doğru tarayıp ilk içeri gireni seç
     cx, cy = _polygon_centroid(pts)
-    for step in range(0, 30):
-        hy = cy + (maxy - cy) * (step / 30.0)
+    for step in range(0, 40):
+        a = step / 40.0
+        hy = cy + (maxy - inward - cy) * a
         hx = cx
         if _point_in_poly(hx, hy, safe_poly):
             return float(hx), float(hy)
 
-    # worst-case fallback
-    return 0.0, 16.0
+    return 0.0, 12.0
 
 
-# -----------------------
-# SCAD writer
-# -----------------------
+
+
 def generate_scad_from_spec(spec: dict, out_name: str, thickness_mm: float = 4.2) -> Path:
     """
     SCAD-only output.
@@ -291,7 +287,7 @@ def generate_scad_from_spec(spec: dict, out_name: str, thickness_mm: float = 4.2
     t = float(spec.get("thickness_mm", thickness_mm))
     t = max(3.2, min(5.2, t))
 
-    # hole radius from spec (keep your behavior)
+    # hole radius
     holes = spec.get("holes", [])
     if not isinstance(holes, list) or len(holes) != 1:
         hr = 2.6
@@ -299,7 +295,7 @@ def generate_scad_from_spec(spec: dict, out_name: str, thickness_mm: float = 4.2
         h = holes[0]
         hr = float(h.get("r_mm", 2.6))
 
-    # build pts by symbol
+    
     if symbol == "heart":
         pts = _heart_pts(n=300, aspect=aspect, jitter=jitter, seed=seed)
     elif symbol == "face":
@@ -311,33 +307,30 @@ def generate_scad_from_spec(spec: dict, out_name: str, thickness_mm: float = 4.2
     else:
         pts = _blob_pts(n=300, aspect=aspect, roundness=roundness, jitter=jitter, seed=seed)
 
-    # rotate + normalize radius
+
     pts = _rotate_pts(pts, rotation_deg)
     pts = _normalize_to_radius(pts, target_r=22.0)
 
-    # -----------------------
-    # AUTO keychain hole placement (FIXED: always inside)
-    # -----------------------
+    
     hx, hy = _pick_hole_center(pts, hr)
 
-    # offset_r controls smoothing & CGAL stability
+    
     if emotion in ("energetic", "joyful", "angry"):
-        offset_r = 0.18 + 0.18 * (1.0 - roundness)  # sharper
+        offset_r = 0.18 + 0.18 * (1.0 - roundness)  
     elif emotion in ("depressed", "calm", "anxious"):
-        offset_r = 0.65 + 0.35 * roundness          # rounder
+        offset_r = 0.65 + 0.35 * roundness         
     else:
         offset_r = 0.35 + 0.25 * roundness
 
     offset_r = max(0.12, min(1.15, offset_r))
 
-    # Face engrave params (top carving, not holes)
-    engrave_depth = 0.9  # mm
+    engrave_depth = 0.9  
     eye_r = max(1.4, min(3.2, eye_size * 14.0))
     eye_x = 6.5
     eye_y = 4.8
 
     mouth_y = -6.5
-    mouth_r = 10.0 + 6.0 * (1.0 - abs(mouth_curve))  # 10..16
+    mouth_r = 10.0 + 6.0 * (1.0 - abs(mouth_curve)) 
     mouth_w = max(8.0, min(16.0, mouth_width * 20.0))
     mouth_thick = 1.6
 
@@ -368,7 +361,7 @@ def generate_scad_from_spec(spec: dict, out_name: str, thickness_mm: float = 4.2
     lines.append("    shape2d();")
     lines.append("}")
 
-    # face engrave (shallow carving)
+    
     lines.append("module face_engrave(){")
     lines.append("  // eyes")
     lines.append(f"  translate([{eye_x}, {eye_y}, thickness_mm-engrave_depth]) cylinder(h=engrave_depth+0.2, r={round(eye_r,4)});")
